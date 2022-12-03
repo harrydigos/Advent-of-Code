@@ -10,13 +10,6 @@ const getRucksacks = (file: string): string[] => {
   return rucksack;
 };
 
-const splitInHalf = (rucksack: string): [string, string] => {
-  return [
-    rucksack.slice(0, Math.ceil(rucksack.length / 2)),
-    rucksack.slice(Math.ceil(rucksack.length / 2)),
-  ];
-};
-
 const translateToNumber = (letter: string): number => {
   const letterAscii = letter.charCodeAt(0);
 
@@ -29,11 +22,13 @@ const calculatePrioritiesPt1 = (rucksacks: string[]): number => {
   let sum: number = 0;
 
   rucksacks.map((rucksack) => {
-    let [half1, half2] = splitInHalf(rucksack);
-    let [halfSet1, halfSet2] = [new Set(half1), new Set(half2)];
+    let [half1, half2] = [
+      new Set(rucksack.slice(0, Math.ceil(rucksack.length / 2))),
+      new Set(rucksack.slice(Math.ceil(rucksack.length / 2))),
+    ];
 
-    [...halfSet1]
-      .filter((x) => halfSet2.has(x))
+    [...half1]
+      .filter((x) => half2.has(x))
       .forEach((letter: string) => (sum += translateToNumber(letter)));
   });
 
@@ -46,7 +41,7 @@ const splitInGroups = (rucksacks: string[]): string[][] => {
   for (let i = 0; i < rucksacks.length; i += 3) {
     groups.push(rucksacks.slice(i, i + 3));
   }
-  
+
   return groups;
 };
 
