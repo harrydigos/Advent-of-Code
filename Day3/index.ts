@@ -7,7 +7,6 @@ const getRucksacks = (file: string): string[] => {
   file.split(/\r?\n/).forEach((line) => {
     rucksack.push(line);
   });
-
   return rucksack;
 };
 
@@ -31,13 +30,11 @@ const calculatePrioritiesPt1 = (rucksacks: string[]): number => {
 
   rucksacks.map((rucksack) => {
     let [half1, half2] = splitInHalf(rucksack);
+    let [halfSet1, halfSet2] = [new Set(half1), new Set(half2)];
 
-    [...half1].map((letter) => {
-      if (half2.includes(letter)) {
-        half2 = half2.replace(RegExp(letter, "g"), "");
-        sum += translateToNumber(letter);
-      }
-    });
+    [...halfSet1]
+      .filter((x) => halfSet2.has(x))
+      .forEach((letter: string) => (sum += translateToNumber(letter)));
   });
 
   return sum;
@@ -45,32 +42,28 @@ const calculatePrioritiesPt1 = (rucksacks: string[]): number => {
 
 const splitInGroups = (rucksacks: string[]): string[][] => {
   let groups: string[][] = [];
-  let i = 0;
-  while (i < rucksacks.length) {
-    groups.push(rucksacks.slice(i, i + 3));
-    i += 3;
-  }
 
+  for (let i = 0; i < rucksacks.length; i += 3) {
+    groups.push(rucksacks.slice(i, i + 3));
+  }
+  
   return groups;
 };
 
-const calculatePrioritiesForGroupsPt2 = (groups: string[][]): number => {
+const calculatePrioritiesPt2 = (groups: string[][]): number => {
   let sum: number = 0;
 
-  for (let i = 0; i < groups.length; i++) {
-    let group1 = groups[i][0];
-    let group2 = groups[i][1];
-    let group3 = groups[i][2];
+  groups.map((group) => {
+    let [groupSet1, groupSet2, groupSet3] = [
+      new Set(group[0]),
+      new Set(group[1]),
+      new Set(group[2]),
+    ];
 
-    [...group1].map((letter) => {
-      if (group2.includes(letter) && group3.includes(letter)) {
-        group2 = group2.replace(RegExp(letter, "g"), "");
-        group3 = group3.replace(RegExp(letter, "g"), "");
-        sum += translateToNumber(letter);
-      }
-    });
-  }
-
+    [...groupSet1]
+      .filter((x) => groupSet2.has(x) && groupSet3.has(x))
+      .forEach((letter: string) => (sum += translateToNumber(letter)));
+  });
   return sum;
 };
 
@@ -78,4 +71,4 @@ const rucksacks: string[] = getRucksacks(file);
 const groups: string[][] = splitInGroups(rucksacks);
 
 console.log("Part 1:", calculatePrioritiesPt1(rucksacks));
-console.log("Part 2:", calculatePrioritiesForGroupsPt2(groups));
+console.log("Part 2:", calculatePrioritiesPt2(groups));
