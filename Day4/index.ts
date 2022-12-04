@@ -10,52 +10,38 @@ const getPairs = (file: string): string[][] => {
   return pairs;
 };
 
-const getHoursSets = (pairs: string[]): Set<Number>[] => {
-  let hours: Set<Number> = new Set();
-  let hours2: Set<Number> = new Set();
-
-  let [hourStart, hourEnd] = [
-    parseInt(pairs[0].slice(0, pairs[0].indexOf("-"))),
-    parseInt(pairs[0].slice(pairs[0].indexOf("-") + 1)),
-  ];
-  let [hourStart2, hourEnd2] = [
-    parseInt(pairs[1].slice(0, pairs[1].indexOf("-"))),
-    parseInt(pairs[1].slice(pairs[1].indexOf("-") + 1)),
-  ];
-
-  for (let i = hourStart; i <= hourEnd; i++) hours.add(i);
-  for (let i = hourStart2; i <= hourEnd2; i++) hours2.add(i);
-
-  return [hours, hours2];
+const containsPt1 = (one: number[], two: number[]): boolean => {
+  return one[0] <= two[0] && one[1] >= two[1];
 };
 
-const intersection = (setA: Set<Number>, setB: Set<Number>): Set<Number> => {
-  const _intersection = new Set<Number>();
-  setB.forEach((x) => {
-    setA.has(x) && _intersection.add(x);
-  });
-  return _intersection;
+const containsPt2 = (one: number[], two: number[]): boolean => {
+  return (
+    (one[0] <= two[0] && one[1] >= two[0]) ||
+    (one[1] >= two[1] && one[0] <= two[1])
+  );
 };
 
-const findHourOverlaps = (pairs: string[][]): [number, number] => {
-  let overlapCountPt1: number = 0;
-  let overlapCountPt2: number = 0;
+const splitPairs = (pair: string[]): number[][] => {
+  return [pair[0].split("-").map((x) => +x), pair[1].split("-").map((x) => +x)];
+};
 
-  pairs.map((pair) => {
-    const [hours, hours2]: Set<Number>[] = getHoursSets(pair);
-    const intersectionSet: Set<Number> = intersection(hours, hours2);
+const findOverlapsPt1 = (pairs: string[][]): number => {
+  return pairs
+    .map((pair) => {
+      let [left, right] = splitPairs(pair);
+      return containsPt1(left, right) || containsPt1(right, left);
+    })
+    .filter((x) => x).length;
+};
 
-    if (
-      intersectionSet.size === hours.size ||
-      intersectionSet.size === hours2.size
-    )
-      overlapCountPt1++;
-
-    if (intersectionSet.size > 0) overlapCountPt2++; // Part 2
-  });
-
-  return [overlapCountPt1, overlapCountPt2];
+const findOverlapsPt2 = (pairs: string[][]): number => {
+  return pairs
+    .map((pair) => {
+      let [left, right] = splitPairs(pair);
+      return containsPt2(left, right) || containsPt2(right, left);
+    })
+    .filter((x) => x).length;
 };
 
 const pairs: string[][] = getPairs(file);
-console.log(findHourOverlaps(pairs));
+console.log(findOverlapsPt1(pairs), findOverlapsPt2(pairs));
