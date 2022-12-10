@@ -1,16 +1,11 @@
 import { readFileSync } from "fs";
 
-const WIDTH: number = 1000;
-const HEIGHT: number = 1000;
+// const TAIL_COUNT = 1; // Part 1 
+const TAIL_COUNT = 9; // Part 2
 
 type Move = {
   direction: "U" | "D" | "L" | "R";
   steps: number;
-};
-
-type Cell = {
-  x: number;
-  y: number;
 };
 
 const moves: Move[] = readFileSync("input.prod", "utf8")
@@ -23,63 +18,66 @@ const moves: Move[] = readFileSync("input.prod", "utf8")
     } as Move;
   });
 
-const grid: string[][] = [];
+let hX = 0;
+let hY = 0;
 
-for (let row = 0; row < HEIGHT; row++) {
-  grid[row] = new Array(WIDTH).fill(".");
+let visited = new Set(["0/0"]);
+let tails: number[][] = [];
+
+for (let i = 0; i < TAIL_COUNT; i++) {
+  tails.push([0, 0]);
 }
 
-const center: Cell = {
-  x: Math.floor(WIDTH / 2),
-  y: Math.floor(HEIGHT / 2),
+const movement = {
+  U: { x: 0, y: -1 },
+  D: { x: 0, y: 1 },
+  L: { x: -1, y: 0 },
+  R: { x: 1, y: 0 },
 };
 
-grid[center.y][center.x] += "#sTH";
+const moveHeadTo = (move: Move) => {
+  hY = movement[move.direction].y + hY;
+  hX = movement[move.direction].x + hX;
 
-var head: Cell = Object.assign({}, center);
-var tail: Cell = Object.assign({}, center);
+  for (let i = 0; i < TAIL_COUNT; i++) {
+    moveTail(i);
 
-const moveTail = (prevHeadPos: Cell, tail: Cell): Cell => {
-  let neighbors: Cell[] = [
-    { x: tail.x - 1, y: tail.y - 1 },
-    { x: tail.x, y: tail.y - 1 },
-    { x: tail.x + 1, y: tail.y - 1 },
-    { x: tail.x - 1, y: tail.y },
-    { x: tail.x, y: tail.y },
-    { x: tail.x + 1, y: tail.y },
-    { x: tail.x - 1, y: tail.y + 1 },
-    { x: tail.x, y: tail.y + 1 },
-    { x: tail.x + 1, y: tail.y + 1 },
-  ];
-
-  for (let neighbor of neighbors) if (grid[neighbor.y][neighbor.x].includes("H")) return tail;
-
-  grid[tail.y][tail.x] = grid[tail.y][tail.x].slice(0, -1);
-  if (grid[prevHeadPos.y][prevHeadPos.x].includes("#")) grid[prevHeadPos.y][prevHeadPos.x] += "T";
-  else grid[prevHeadPos.y][prevHeadPos.x] += "#T";
-  return prevHeadPos;
-};
-
-const makeMove = (move: Move): void => {
-  let movement = {
-    U: { x: 0, y: -1 },
-    D: { x: 0, y: 1 },
-    L: { x: -1, y: 0 },
-    R: { x: 1, y: 0 },
-  };
-
-  for (let i = 0; i < move.steps; i++) {
-    let prev = Object.assign({}, head);
-    grid[head.y][head.x] = grid[head.y][head.x].slice(0, -1);
-    head.x += movement[move.direction].x;
-    head.y += movement[move.direction].y;
-    grid[head.y][head.x] += "H";
-    tail = moveTail(prev, tail);
+    if (i === TAIL_COUNT - 1) {
+      let [lasttX, lasttY] = tails[TAIL_COUNT - 1];
+      visited.add(lasttX + "/" + lasttY);
+    }
   }
 };
 
-moves.forEach((move) => {
-  makeMove(move);
-});
+const moveTail = (i: number) => {
+  let [tX, tY] = tails[i];
+  let refX = 0;
+  let refY = 0;
 
-console.log("Part 1:", grid.flat().filter((x) => x.includes("#")).length);
+  if (i > 0) {
+    let [prevtX, prevtY] = tails[i - 1];
+    refX = prevtX;
+    refY = prevtY;
+  } else {
+    refX = hX;
+    refY = hY;
+  }
+
+  let diffX = Math.abs(refX - tX);
+  let diffY = Math.abs(refY - tY);
+
+  if (diffX < 2 && diffY < 2) return;
+
+  if (diffX > 1 && !diffY) tX += refX - tX > 0 ? 1 : -1;
+  else if (diffY > 1 && !diffX) tY += refY - tY > 0 ? 1 : -1;
+  else {
+    tX += refX - tX > 0 ? 1 : -1;
+    tY += refY - tY > 0 ? 1 : -1;
+  }
+
+  tails[i] = [tX, tY];
+};
+
+for (const move of moves) for (let n = 0; n < move.steps; n++) moveHeadTo(move);
+
+console.log(visited.size);
