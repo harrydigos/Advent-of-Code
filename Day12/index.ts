@@ -1,4 +1,3 @@
-import { readFileSync, writeFileSync, appendFileSync } from "fs";
 import { file, start, end } from "./parse";
 
 type Position = { y: number; x: number };
@@ -35,19 +34,26 @@ const getNeighbours = (grid: GridNode[][], position: Position): Position[] => {
 const dijkstra = (grid: GridNode[][], queue: Position[], distances: number[][]): void => {
   while (queue.length > 0) {
     const current = queue.shift();
+
     grid[current!.y][current!.x].visited = true;
+
     const neighbours = getNeighbours(grid, current!);
 
     neighbours.forEach((neighbour) => {
-      let currWeight = grid[current!.y][current!.x].weight;
-      let nextWeight = grid[neighbour.y][neighbour.x].weight;
-      if (currWeight >= nextWeight - 1) {
-        let shortestDist = distances[neighbour.y][neighbour.x] + 1;
-        let currShortestDist = distances[current!.y][current!.x];
+      const currWeight = grid[current!.y][current!.x].weight;
+      const nextWeight = grid[neighbour.y][neighbour.x].weight;
+
+      const isValidNeighbour = () => currWeight >= nextWeight - 1;
+      const canGoToNewNeighbour = () => !grid[neighbour.y][neighbour.x].visited && currWeight <= nextWeight + 1;
+
+      if (isValidNeighbour()) {
+        const shortestDist = distances[neighbour.y][neighbour.x] + 1;
+        const currShortestDist = distances[current!.y][current!.x];
+
         distances[current!.y][current!.x] = Math.min(currShortestDist, shortestDist);
       }
 
-      if (!grid[neighbour.y][neighbour.x].visited && currWeight <= nextWeight + 1) {
+      if (canGoToNewNeighbour()) {
         queue.push(neighbour);
         grid[neighbour.y][neighbour.x].visited = true;
       }
@@ -75,11 +81,5 @@ dijkstra(grid, queue, distances);
 
 console.log("Part 1:", distances[start.y][start.x]);
 
-// writeFileSync("output.prod", "Weighted grid:\n");
-// appendFileSync("output.prod", gridWeight.map((row) => row.join(" ")).join("\n"));
-
-// appendFileSync("output.prod", "\n\nGrid:\n");
-// appendFileSync("output.prod", grid.map((row) => row.join(" ")).join("\n"));
-
-// appendFileSync("output.prod", "\n\nDistances:\n");
-// appendFileSync("output.prod", distances.map((row) => row.join(" ")).join("\n"));
+const result = grid.map((row) => row.filter((x) => x.weight === 0)).flat();
+console.log("Part 2:", Math.min(...result.map((x) => distances[x.position.y][x.position.x])));
