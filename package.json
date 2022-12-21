@@ -4,7 +4,20 @@
   "description": "Advent of Code 2022",
   "author": "Babis Digos",
   "scripts": {
-    "day": "tsc src/$DAY/index.ts --outDir dist && node dist/$DAY/index.js",
+    "day01": "tsc src/Day01/index.ts --outDir dist && node dist/Day01/index.js",
+    "day02": "tsc src/Day02/index.ts --outDir dist && node dist/Day02/index.js",
+    "day03": "tsc src/Day03/index.ts --outDir dist && node dist/Day03/index.js",
+    "day04": "tsc src/Day04/index.ts --outDir dist && node dist/Day04/index.js",
+    "day05": "tsc src/Day05/index.ts --outDir dist && node dist/Day05/index.js",
+    "day06": "tsc src/Day06/index.ts --outDir dist && node dist/Day06/index.js",
+    "day07": "tsc src/Day07/index.ts --outDir dist && node dist/Day07/index.js",
+    "day08": "tsc src/Day08/index.ts --outDir dist && node dist/Day08/index.js",
+    "day09": "tsc src/Day09/index.ts --outDir dist && node dist/Day09/index.js",
+    "day10": "tsc src/Day10/index.ts --outDir dist && node dist/Day10/index.js",
+    "day11": "tsc src/Day11/index.ts --outDir dist && node dist/Day11/index.js",
+    "day12": "tsc src/Day12/index.ts --outDir dist && node dist/Day12/index.js",
+    "day13": "tsc src/Day13/index.ts --outDir dist && node dist/Day13/index.js",
+    "day14": "tsc src/Day14/index.ts --outDir dist && node dist/Day14/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
