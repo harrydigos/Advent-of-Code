@@ -1,63 +1,51 @@
-import { readFileSync } from "fs";
+import { zip, isNumber, isArray, readLines, splitOn } from "../utils";
 
-type Packet = number | number[] | undefined;
+const COMPARISON = {
+  Correct: -1,
+  Equal: 0,
+  Incorrect: 1,
+} as const;
 
-const file = readFileSync("input.test", "utf8").split(/\r?\n/);
+type Packet = (number[] | number)[];
+type Comparison = typeof COMPARISON[keyof typeof COMPARISON];
 
-const input = [];
+const comparePackets = (l: Packet, r: Packet): Comparison => {
+  for (const [left, right] of zip(l, r)) {
+    if (left === undefined) return COMPARISON.Correct;
+    if (right === undefined) return COMPARISON.Incorrect;
 
-for (let i = 0; i < file.length; i += 3) {
-  input.push([file[i], file[i + 1]]);
-}
-
-let pairs: Packet[][] = input.map(([left, right]) => {
-  return [JSON.parse(left), JSON.parse(right)];
-});
-
-const isOrdered = (left: Packet, right: Packet, ordered: boolean = true): boolean => {
-  if (!ordered) return false;
-
-  const isNumber = (item: Packet): item is number => typeof item === "number";
-  const isArray = (item: Packet): item is number[] => Array.isArray(item);
-  const isUndefined = (item: Packet): item is undefined => item === undefined;
-
-  const bothAreNumbers = isNumber(left) && isNumber(right);
-  const bothAreArrays = isArray(left) && isArray(right);
-  const oneNumber = (isNumber(left) && !isNumber(right)) || (!isNumber(left) && isNumber(right));
-  const oneArray = (isArray(left) && !isArray(right)) || (!isArray(left) && isArray(right));
-
-  if (bothAreNumbers) {
-    ordered = left <= right;
-    console.log("bothAreNumbers", left, "<=", right, ordered);
-  } else if (bothAreArrays) {
-    console.log("bothAreArrays", left, right);
-    for (let i = 0; i < left.length; i++) {
-      ordered = isOrdered(left[i], right[i], ordered);
-      if (!ordered) return false;
+    if (isNumber(left) && isNumber(right)) {
+      if (left === right) continue;
+      return left < right ? COMPARISON.Correct : COMPARISON.Incorrect;
     }
-  } else if (oneNumber) {
-    console.log("oneNumber", left, right);
-    const leftArray = isNumber(left) ? [left] : isArray(left) ? left : [];
-    const rightArray = isNumber(right) ? [right] : isArray(right) ? right : [];
 
-    if (!isUndefined(left) && !isUndefined(right)) ordered = leftArray[0] <= rightArray[0];
-    else if (isUndefined(left) && !isUndefined(right)) ordered = true;
-    else if (isNumber(left) && isUndefined(right)) ordered = false;
-  } else if (oneArray) {
-    console.log("oneArray", left, right);
-    if (isUndefined(right)) ordered = false;
+    const result = comparePackets(isArray(left) ? left : [left], isArray(right) ? right : [right]);
+
+    if (result !== COMPARISON.Equal) return result;
   }
-
-  return ordered;
+  return COMPARISON.Equal;
 };
 
-let count: number[] = [];
-pairs.forEach(([left, right], index) => {
-  console.log("Index", index + 1);
-  if (isOrdered(left, right)) {
-    console.log("Index", index + 1, "right order");
-    count.push(index + 1);
-  }
-});
+const main = () => {
+  const file = readLines("input.prod");
+  const lines = file.map((line) => (line !== "" ? JSON.parse(line) : ""));
 
-console.log(count.reduce((a, b) => a + b, 0));
+  const separatorPackets: Packet[] = [[[2]], [[6]]];
+  const separatorStrings: string[] = separatorPackets.map((p) => JSON.stringify(p));
+
+  const pairs = splitOn(lines, (l) => l === "") as [Packet, Packet][];
+  const allPackets = [...pairs.flatMap((p) => p), ...separatorPackets];
+
+  const sum = pairs
+    .map(([left, right]) => comparePackets(left, right))
+    .reduce((sum: number, result, i) => sum + (result === COMPARISON.Correct ? i + 1 : 0), 0);
+
+  const decoderKey = allPackets
+    .sort(comparePackets)
+    .reduce((result, packet, i) => result * (separatorStrings.includes(JSON.stringify(packet)) ? i + 1 : 1), 1);
+
+  console.log("Part 1:", sum);
+  console.log("Part 2:", decoderKey);
+};
+
+main();
