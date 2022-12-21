@@ -27,7 +27,7 @@ const comparePackets = (l: Packet, r: Packet): Comparison => {
 };
 
 const main = () => {
-  const file = readLines("input.prod");
+  const file = readLines("src/Day13/input.prod");
   const lines = file.map((line) => (line !== "" ? JSON.parse(line) : ""));
 
   const separatorPackets: Packet[] = [[[2]], [[6]]];

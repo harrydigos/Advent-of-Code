@@ -30,37 +30,49 @@ const initRocks = () => {
   }
 };
 
-const placeSandInLeft = (y: number, x: number) => {
-  let placeSand;
-  for (let i = y; i < cave.length; i++) {
-    if (cave[i][x] === "#") break;
-    if (cave[i][x] === ".") placeSand = { y: i, x };
-    x--;
+const isInBounds = (y: number, x: number) => y >= 0 && y < cave.length && x >= 0 && x < cave[0].length;
+
+const placeSandInLeft = () => {
+  let fall = fallSand();
+  while (isInBounds(fall.y + 1, fall.x - 1) && cave[fall.y + 1][fall.x - 1] === ".") {
+    fall = { y: fall.y + 1, x: fall.x - 1 };
   }
-  return placeSand;
+  return fall;
+};
+
+const placeSandInRight = () => {
+  let fall = fallSand();
+  while (isInBounds(fall.y + 1, fall.x + 1) && cave[fall.y + 1][fall.x + 1] === ".") {
+    fall = { y: fall.y + 1, x: fall.x + 1 };
+  }
+  return fall;
+};
+
+const fallSand = () => {
+  let y = 1;
+  while (isInBounds(y + 1, 500) && cave[y + 1][500] === ".") {
+    y++;
+  }
+  return { y, x: 500 };
 };
 
 const pourSand = () => {
   cave[0][500] = "+";
 
-  while (cave[1][500] === ".") {
-    for (let y = 0; y < cave.length; y++) {
-      const nextIsRock = cave[y + 1][500] === "#";
-      const nextIsSand = cave[y + 1][500] === "o";
+  while (cave[2][500] === ".") {
+    // Go straight down
+    // Go left diagonal
+    // Go right diagonal
+    const fall = fallSand();
+    const left = placeSandInLeft();
+    const right = placeSandInRight();
 
-      if (nextIsRock) {
-        cave[y][500] = "o";
-        break;
-      } else if (nextIsSand) {
-        let left = placeSandInLeft(y, 500);
-        if (!left) {
-          cave[y][500] = "o";
-        } else if (left) {
-          cave[left.y][left.x] = "o";
-        }
-        break;
-      }
+    console.log("Fall sand", fall);
+    if (cave[fall.y + 1][fall.x - 1] !== "." && cave[fall.y + 1][fall.x + 1] !== "." && cave[fall.y + 1][fall.x] !== ".") {
+      cave[fall.y][fall.x] = "o";
     }
+    if (left) cave[left.y][left.x] = "o";
+    if (right) cave[right.y][right.x] = "o";
   }
 };
 

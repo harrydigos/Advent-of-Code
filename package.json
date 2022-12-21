@@ -1,4 +1,12 @@
 {
+  "name": "advent-of-code",
+  "version": "1.0.0",
+  "description": "Advent of Code 2022",
+  "author": "Babis Digos",
+  "scripts": {
+    "day": "tsc src/$DAY/index.ts --outDir dist && node dist/$DAY/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "devDependencies": {
     "@types/node": "^18.11.10",
     "typescript": "^4.9.3"

@@ -30,38 +30,45 @@ var initRocks = function () {
         }
     }
 };
-var placeSandInLeft = function (y, x) {
-    var placeSand;
-    for (var i = y; i < cave.length; i++) {
-        if (cave[i][x] === "#")
-            break;
-        if (cave[i][x] === ".")
-            placeSand = { y: i, x: x };
-        x--;
+var isInBounds = function (y, x) { return y >= 0 && y < cave.length && x >= 0 && x < cave[0].length; };
+var placeSandInLeft = function () {
+    var fall = fallSand();
+    while (isInBounds(fall.y + 1, fall.x - 1) && cave[fall.y + 1][fall.x - 1] === ".") {
+        fall = { y: fall.y + 1, x: fall.x - 1 };
     }
-    return placeSand;
+    return fall;
+};
+var placeSandInRight = function () {
+    var fall = fallSand();
+    while (isInBounds(fall.y + 1, fall.x + 1) && cave[fall.y + 1][fall.x + 1] === ".") {
+        fall = { y: fall.y + 1, x: fall.x + 1 };
+    }
+    return fall;
+};
+var fallSand = function () {
+    var y = 1;
+    while (isInBounds(y + 1, 500) && cave[y + 1][500] === ".") {
+        y++;
+    }
+    return { y: y, x: 500 };
 };
 var pourSand = function () {
     cave[0][500] = "+";
-    while (cave[1][500] === ".") {
-        for (var y = 0; y < cave.length; y++) {
-            var nextIsRock = cave[y + 1][500] === "#";
-            var nextIsSand = cave[y + 1][500] === "o";
-            if (nextIsRock) {
-                cave[y][500] = "o";
-                break;
-            }
-            else if (nextIsSand) {
-                var left = placeSandInLeft(y, 500);
-                if (!left) {
-                    cave[y][500] = "o";
-                }
-                else if (left) {
-                    cave[left.y][left.x] = "o";
-                }
-                break;
-            }
+    while (cave[2][500] === ".") {
+        // Go straight down
+        // Go left diagonal
+        // Go right diagonal
+        var fall = fallSand();
+        var left = placeSandInLeft();
+        var right = placeSandInRight();
+        console.log("Fall sand", fall);
+        if (cave[fall.y + 1][fall.x - 1] !== "." && cave[fall.y + 1][fall.x + 1] !== "." && cave[fall.y + 1][fall.x] !== ".") {
+            cave[fall.y][fall.x] = "o";
         }
+        if (left)
+            cave[left.y][left.x] = "o";
+        if (right)
+            cave[right.y][right.x] = "o";
     }
 };
 var SIZE = 1000;
