@@ -42,3 +42,10 @@ export const splitOn = <T>(array: T[], predicate: (v: T, i: number) => boolean):
       [[]] as T[][]
     )
     .filter((a) => a.length > 0);
+
+export const findTopNMax = (array: number[], n: number): number[] => {
+  const sortedArray = array.sort((a, b) => b - a);
+  return sortedArray.slice(0, n);
+};
+
+export const multiplyArray = (array: number[]) => array.reduce((product, curr) => product * curr, 1);
