@@ -2,6 +2,8 @@ export const isArray = <T>(value: unknown): value is T[] => Array.isArray(value)
 
 export const lastItem = <T>(array: T[]): T => array[array.length - 1];
 
+export const mult = (values: number[]) => values.reduce((product, curr) => product * curr, 1);
+
 export const sum = (values: number[]): number => values.reduce((a, b) => a + b, 0);
 
 export const createArray = <T = undefined>(size: number): T[] => Array.from({ length: size });
@@ -47,5 +49,3 @@ export const findTopNMax = (array: number[], n: number): number[] => {
   const sortedArray = array.sort((a, b) => b - a);
   return sortedArray.slice(0, n);
 };
-
-export const multiplyArray = (array: number[]) => array.reduce((product, curr) => product * curr, 1);

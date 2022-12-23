@@ -1,6 +1,7 @@
-import { findTopNMax, multiplyArray, readLines, splitOn } from "../utils";
+import { findTopNMax, mult, readLines, splitOn } from "../utils";
 
-const ROUNDS = 20;
+const ROUNDS_PART1 = 20;
+const ROUNDS_PART2 = 10000;
 
 type Monkey = {
   id: number;
@@ -29,13 +30,10 @@ const calcNew = (line: string, item: number) => {
   else return calculation[operator](parseInt(left), parseInt(right));
 };
 
-const main = () => {
-  const file = readLines("src/Day11/input.prod");
-  const lines = splitOn(file, (line) => line === "");
-
-  const monkeys: Monkey[] = lines.map((line) => {
+const getMonkeys = (lines: string[][]): Monkey[] => {
+  return lines.map((line) => {
     const numbers = /\d+/g;
-    const operator = /[*+]/;
+
     return {
       id: parseInt(line[0].match(numbers)![0]),
       items: line[1].match(numbers)!.map((n) => parseInt(n)),
@@ -47,34 +45,60 @@ const main = () => {
       },
       inspections: 0,
     };
-  });
+  }) as Monkey[];
+};
 
-  for (let i = 0; i < ROUNDS; i++) {
+const rounds = (rounds: number, monkeys: Monkey[], part: 1 | 2) => {
+  const isDivisible = (dividend: number, divisor: number) => dividend % divisor === 0;
+  const allDivisors = monkeys.map((monkey) => monkey.test.divBy).reduce((a, b) => a * b, 1);
+
+  for (let i = 0; i < rounds; i++) {
     monkeys.forEach((monkey) => {
       while (monkey.items.length > 0) {
         const item = monkey.items.shift();
-        if (item === undefined) break;
 
-        const newMonkey = Math.floor(calcNew(monkey.new, item) / 3);
-        console.log(newMonkey);
-        const isDivisible = (dividend: number, divisor: number) => dividend % divisor === 0;
+        if (item === undefined) break;
+        monkey.inspections++;
+
+        let newMonkey = calcNew(monkey.new, item);
+        newMonkey = part === 1 ? Math.floor(newMonkey / 3) : Math.floor(newMonkey % allDivisors);
 
         if (isDivisible(newMonkey, monkey.test.divBy)) {
           monkeys.find((m) => m.id === monkey.test.trueMonkey)!.items.push(newMonkey);
         } else {
           monkeys.find((m) => m.id === monkey.test.falseMonkey)!.items.push(newMonkey);
         }
-        monkey.inspections++;
       }
     });
   }
-  const monkeyBussiness = findTopNMax(
-    monkeys.map((m) => m.inspections),
-    2
+};
+
+const main = () => {
+  const file = readLines("src/Day11/input.prod");
+  const lines = splitOn(file, (line) => line === "");
+
+  const monkeysPt1 = getMonkeys(lines);
+  const monkeysPt2 = getMonkeys(lines);
+
+  rounds(ROUNDS_PART1, monkeysPt1, 1);
+  rounds(ROUNDS_PART2, monkeysPt2, 2);
+
+  const monkeyBussinessPt1 = mult(
+    findTopNMax(
+      monkeysPt1.map((m) => m.inspections),
+      2
+    )
   );
-  console.log("Part 1:", multiplyArray(monkeyBussiness));
-  // console.log(lines);
-  // console.log(monkeys);
+
+  const monkeyBussinessPt2 = mult(
+    findTopNMax(
+      monkeysPt2.map((m) => m.inspections),
+      2
+    )
+  );
+
+  console.log("Part 1:", monkeyBussinessPt1); // 108240
+  console.log("Part 2:", monkeyBussinessPt2); // 25712998901
 };
 
 main();
