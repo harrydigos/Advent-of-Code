@@ -17,6 +17,7 @@
     "day12": "tsc src/Day12/index.ts --outDir dist && node dist/Day12/index.js",
     "day13": "tsc src/Day13/index.ts --outDir dist && node dist/Day13/index.js",
     "day14": "tsc src/Day14/index.ts --outDir dist && node dist/Day14/index.js",
+    "day15": "tsc src/Day15/index.ts --outDir dist && node dist/Day15/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

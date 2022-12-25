@@ -1,91 +1,67 @@
-import { readFileSync, writeFileSync } from "fs";
+import { count2DArray, createArray2D, readLines } from "../utils";
 
-const initRocks = () => {
-  for (let i = 0; i < rocks.length; i++) {
-    for (let j = 0; j < rocks[i].length; j++) {
-      const getXAxis = (x: number) => parseInt(x.toString().split(".")[0]);
-      const getYAxis = (y: number) => parseFloat(y.toString().split(".")[1]);
+type Value = "#" | "o" | undefined;
 
-      const from = rocks[i][j];
-      const to = rocks[i][j + 1];
-      if (!to) break;
+const initRocks = (floor = false): [Value[][], number] => {
+  const file = readLines("src/Day14/input.prod");
+  const cave: Value[][] = createArray2D(1000, 1000);
 
-      const [xAxisFrom, yAxisFrom] = [getXAxis(from), getYAxis(from)];
-      const [xAxisTo, yAxisTo] = [getXAxis(to), getYAxis(to)];
+  let greatestY = -Infinity;
 
-      const vertical = xAxisFrom === xAxisTo;
-      const horizontal = yAxisFrom === yAxisTo;
+  file.forEach((line) => {
+    const coords = line.split(" -> ").map((rawCoord) => rawCoord.split(",").map(Number));
+    let [x, y] = coords[0];
 
-      const placeRock = (y: number, x: number) => (cave[y][x] !== "#" ? (cave[y][x] = "#") : null);
+    cave[y][x] = "#";
+    for (const [x2, y2] of coords.slice(1)) {
+      if (y2 > greatestY) greatestY = y2;
 
-      if (vertical) {
-        for (let y = yAxisFrom; y <= yAxisTo; y++) placeRock(y, xAxisFrom);
-        for (let y = yAxisTo; y <= yAxisFrom; y++) placeRock(y, xAxisFrom);
-      }
-      if (horizontal) {
-        for (let x = xAxisFrom; x <= xAxisTo; x++) placeRock(yAxisFrom, x);
-        for (let x = xAxisTo; x <= xAxisFrom; x++) placeRock(yAxisFrom, x);
+      while (x !== x2 || y !== y2) {
+        if (x !== x2) x += x < x2 ? 1 : -1;
+        else if (y !== y2) y += y < y2 ? 1 : -1;
+        cave[y][x] = "#";
       }
     }
+  });
+
+  if (floor) {
+    greatestY += 2;
+    for (let x = -1000; x < 1000; x++) cave[greatestY][x] = "#";
   }
+
+  return [cave, greatestY];
 };
 
-const isInBounds = (y: number, x: number) => y >= 0 && y < cave.length && x >= 0 && x < cave[0].length;
-
-const placeSandInLeft = () => {
-  let fall = fallSand();
-  while (isInBounds(fall.y + 1, fall.x - 1) && cave[fall.y + 1][fall.x - 1] === ".") {
-    fall = { y: fall.y + 1, x: fall.x - 1 };
-  }
-  return fall;
-};
-
-const placeSandInRight = () => {
-  let fall = fallSand();
-  while (isInBounds(fall.y + 1, fall.x + 1) && cave[fall.y + 1][fall.x + 1] === ".") {
-    fall = { y: fall.y + 1, x: fall.x + 1 };
-  }
-  return fall;
-};
-
-const fallSand = () => {
-  let y = 1;
-  while (isInBounds(y + 1, 500) && cave[y + 1][500] === ".") {
-    y++;
-  }
-  return { y, x: 500 };
-};
-
-const pourSand = () => {
-  cave[0][500] = "+";
-
-  while (cave[2][500] === ".") {
-    // Go straight down
-    // Go left diagonal
-    // Go right diagonal
-    const fall = fallSand();
-    const left = placeSandInLeft();
-    const right = placeSandInRight();
-
-    console.log("Fall sand", fall);
-    if (cave[fall.y + 1][fall.x - 1] !== "." && cave[fall.y + 1][fall.x + 1] !== "." && cave[fall.y + 1][fall.x] !== ".") {
-      cave[fall.y][fall.x] = "o";
+const sandFall = (cave: Value[][], greatestY: number) => {
+  sandFalling: while (true) {
+    let [x, y] = [500, 0];
+    if (cave[y][x] === "o") break;
+    while (true) {
+      if (y >= greatestY) {
+        cave[y][x] = undefined;
+        break sandFalling;
+      } else if (cave[y][x] === undefined) {
+        cave[y][x] = "o";
+      } else if (cave[y + 1][x] === undefined) {
+        cave[y][x] = undefined;
+        y++;
+        cave[y][x] = "o";
+      } else if (cave[y + 1][x - 1] === undefined) {
+        cave[y][x] = undefined;
+        x--;
+        y++;
+        cave[y][x] = "o";
+      } else if (cave[y + 1][x + 1] === undefined) {
+        cave[y][x] = undefined;
+        x++;
+        y++;
+        cave[y][x] = "o";
+      } else break;
     }
-    if (left) cave[left.y][left.x] = "o";
-    if (right) cave[right.y][right.x] = "o";
   }
+
+  return count2DArray(cave, (v) => v === "o");
 };
 
-const SIZE = 1000;
-
-const cave = Array.from({ length: 20 }, () => Array.from({ length: SIZE }, () => "."));
-
-const file = readFileSync("input.test", "utf8").split(/\r?\n/);
-
-const rocks: number[][] = file.map((line) => line.split(" -> ").map((rock) => +rock.replace(",", ".")));
-
-initRocks();
-
-pourSand();
-
-writeFileSync("output.test", cave.map((row) => row.map((cell) => cell).join("")).join("\n"));
+console.log("Part 1:", sandFall(...initRocks(false))); // 994
+console.log("Part 2:", sandFall(...initRocks(true))); // 26283

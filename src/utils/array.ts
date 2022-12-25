@@ -6,7 +6,16 @@ export const mult = (values: number[]) => values.reduce((product, curr) => produ
 
 export const sum = (values: number[]): number => values.reduce((a, b) => a + b, 0);
 
+export const countArray = <T>(array: T[], predicate: (value: T) => boolean): number =>
+  array.reduce((count, value) => (predicate(value) ? count + 1 : count), 0);
+
+export const count2DArray = <T>(array: T[][], predicate: (value: T) => boolean): number =>
+  array.reduce((count, row) => count + countArray(row, predicate), 0);
+
 export const createArray = <T = undefined>(size: number): T[] => Array.from({ length: size });
+
+export const createArray2D = <T = undefined>(rows: number, cols: number, fill?: T): T[][] =>
+  createArray(rows).map(() => createArray(cols).map(() => fill?.valueOf() as T));
 
 /**
  * Get the maximum length of an array of arrays.
