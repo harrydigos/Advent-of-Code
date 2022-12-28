@@ -15,7 +15,7 @@ export const count2DArray = <T>(array: T[][], predicate: (value: T) => boolean):
 export const createArray = <T = undefined>(size: number): T[] => Array.from({ length: size });
 
 export const createArray2D = <T = undefined>(rows: number, cols: number, fill?: T): T[][] =>
-  createArray(rows).map(() => createArray(cols).map(() => fill?.valueOf() as T));
+  createArray(rows).map(() => createArray(cols).map(() => fill as T));
 
 /**
  * Get the maximum length of an array of arrays.
